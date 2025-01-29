@@ -19,15 +19,15 @@ function SocketContextProvider({ children }) {
     return socketInstance;
   }, []);
 
-  useEffect(() => {
-    // Automatically connect the socket on mount
-    socket.connect();
+  // useEffect(() => {
+  //   // Automatically connect the socket on mount
+  //   socket.connect();
 
-    // Cleanup socket connection on unmount
-    return () => {
-      socket.disconnect();
-    };
-  }, [socket]);
+  //   // Cleanup socket connection on unmount
+  //   return () => {
+  //     socket.disconnect();
+  //   };
+  // }, [socket]);
 
   return <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>;
 }
