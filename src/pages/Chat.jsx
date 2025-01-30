@@ -14,6 +14,7 @@ export default function Chat() {
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [incomingCall, setIncomingCall] = useState(null); // 🔥 Track incoming call
   const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
 
   const handleJoinedUsers = useCallback((usersList) => {
     console.log("Updated users list:", usersList);
@@ -28,9 +29,24 @@ export default function Chat() {
   const handleCallAccepcted=useCallback(async({answer,from})=>{
    
    await PeerServices.setLocalDescription(answer);
+   localVideoRef.current.srcObject.getTracks().forEach((track) => {
+      PeerServices.peer.addTrack(track, localVideoRef.current.srcObject);
+   });
+
       console.log("Call accepted")
   },[])
 
+  // use effect for peer
+  useEffect(()=>{
+    PeerServices.peer.addEventListener("track", (e) => {
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = e.streams[0];
+      }
+    });
+
+  },[])
+
+// use effect for socket
   useEffect(() => {
     if (!socket.id) {
       console.log("No socket ID found, navigating back to home page");
@@ -97,6 +113,7 @@ export default function Chat() {
 
           {/* Remote video section */}
           <div className="relative bg-gray-800 rounded-xl overflow-hidden aspect-video">
+          <video ref={remoteVideoRef} autoPlay playsInline  className="w-full h-full"/>
             <div className="w-full h-full bg-gray-700 animate-pulse" />
             
             {/* Local video section */}
