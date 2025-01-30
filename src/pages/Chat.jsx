@@ -3,6 +3,7 @@ import { useSocket } from "../context/SocketContext";
 import { useNavigate } from "react-router-dom";
 import { FcVideoCall } from "react-icons/fc";
 import { MdCallEnd } from "react-icons/md";
+import PeerServices from "../services/peer";
 
 export default function Chat() {
   const socket = useSocket();
@@ -19,6 +20,12 @@ export default function Chat() {
     console.log("Updated users list:", usersList);
     setJoinedUsers(usersList);
   }, []);
+  // function to handle incomming call
+  const handleIncommingCall=useCallback(({offer,id})=>{
+    
+
+    console.log("Incomming call")
+  },[])
 
   useEffect(() => {
     if(!socket.id){
@@ -26,19 +33,20 @@ export default function Chat() {
       navigate("/")
     
     } ;
-    console.log("Chat component mounted");
 
     // Ensure socket listener is active
     socket.on("joined-users", handleJoinedUsers);
+    socket.on("incomming-call",handleIncommingCall);
 
     // 🔥 Request the latest user list manually on mount
     socket.emit("get-users");
 
     return () => {
-      console.log("Chat component cleanup");
+    
       socket.off("joined-users", handleJoinedUsers);
+      socket.off("incomming-call",handleIncommingCall);
     };
-  }, [socket, handleJoinedUsers, navigate]);
+  }, [socket, handleJoinedUsers, navigate,handleIncommingCall]);
 
   // Video call controls
   const toggleMute = () => setIsMuted((prev) => !prev);
@@ -58,7 +66,9 @@ const startCall=useCallback(async(data)=>{
   if(localVideoRef.current){
     localVideoRef.current.srcObject=steam
   }
-  console.log("Call started",steam)
+  const offer=await PeerServices.createOffer()
+  socket.emit("start-call",{offer,id:data})
+  console.log("Call started",offer)
 },[])
 
   return (
@@ -80,7 +90,7 @@ const startCall=useCallback(async(data)=>{
           <div className="flex justify-center space-x-4 mt-4">
             <button onClick={toggleMute} className={`p-3 rounded-full ${isMuted ? "bg-red-500" : "bg-gray-200"} hover:bg-opacity-80 transition`} />
             <button onClick={toggleVideo} className={`p-3 rounded-full ${!isVideoOn ? "bg-red-500" : "bg-gray-200"} hover:bg-opacity-80 transition`} />
-            <button onClick={endCall} className=" w-8 h-8 flex items-center justify-center rounded-full cursor-pointer hover:bg-red-700 bg-red-500 hover:bg-red-600 transition" >
+            <button onClick={endCall} className=" w-8 h-8 flex items-center justify-center rounded-full cursor-pointer hover:bg-red-700 bg-red-500  transition" >
             <MdCallEnd color="white" />
             
             </button>
@@ -107,7 +117,7 @@ const startCall=useCallback(async(data)=>{
                 </div>
                {
                 socket.id!==user.id &&  <button onClick={()=>{
-                  startCall(user.username)
+                  startCall(user.id)
                 }} className="p-2 rounded-lg cursor-pointer hover:bg-slate-300 transition">
                 <FcVideoCall color="white"/>
               </button>
