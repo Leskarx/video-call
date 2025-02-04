@@ -52,7 +52,8 @@ export default function Chat() {
     };
   }, [socket, remotePeerId]);
 
-  // Socket listenersuseEffect(() => {
+  // Socket listeners
+  useEffect(() => {
   if (!socket.id) {
     console.log("No socket ID found, navigating back to home page");
     navigate("/");
