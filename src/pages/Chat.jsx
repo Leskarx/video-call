@@ -41,8 +41,7 @@ export default function Chat() {
         remoteVideoRef.current.srcObject = e.streams[0];
       }
     });
-
-    // ICE Candidate Handler
+  
     PeerServices.peer.onicecandidate = (event) => {
       if (event.candidate && remotePeerId) {
         socket.emit("ice-candidate", {
@@ -53,32 +52,30 @@ export default function Chat() {
     };
   }, [socket, remotePeerId]);
 
-  // Socket listeners
-  useEffect(() => {
-    if (!socket.id) {
-      console.log("No socket ID found, navigating back to home page");
-      navigate("/");
-    }
+  // Socket listenersuseEffect(() => {
+  if (!socket.id) {
+    console.log("No socket ID found, navigating back to home page");
+    navigate("/");
+  }
 
-    socket.on("joined-users", handleJoinedUsers);
-    socket.on("incoming-call", handleIncomingCall);
-    socket.on("call-accepted", handleCallAccepted);
-    socket.on("ice-candidate", async (candidate) => {
-      try {
-        await PeerServices.peer.addIceCandidate(new RTCIceCandidate(candidate));
-      } catch (err) {
-        console.error("Error adding ICE candidate:", err);
-      }
-    });
-    socket.emit("get-users");
+  socket.on("joined-users", handleJoinedUsers);
+  socket.on("incoming-call", handleIncomingCall);
+  socket.on("call-accepted", handleCallAccepted);
 
-    return () => {
-      socket.off("joined-users", handleJoinedUsers);
-      socket.off("incoming-call", handleIncomingCall);
-      socket.off("call-accepted", handleCallAccepted);
-      socket.off("ice-candidate");
-    };
-  }, [socket, handleJoinedUsers, navigate, handleIncomingCall, handleCallAccepted]);
+  socket.on("ice-candidate", async (candidate) => {
+    console.log("Received ICE candidate:", candidate);
+    await PeerServices.addIceCandidate(candidate);
+  });
+
+  socket.emit("get-users");
+
+  return () => {
+    socket.off("joined-users", handleJoinedUsers);
+    socket.off("incoming-call", handleIncomingCall);
+    socket.off("call-accepted", handleCallAccepted);
+    socket.off("ice-candidate");
+  };
+}, [socket, handleJoinedUsers, navigate, handleIncomingCall, handleCallAccepted]);
 
   const toggleMute = () => setIsMuted((prev) => !prev);
   const toggleVideo = () => setIsVideoOn((prev) => !prev);
