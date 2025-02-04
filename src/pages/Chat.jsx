@@ -8,11 +8,9 @@ import IncomingCall from "../components/IncommingCall";
 
 export default function Chat() {
   const navigate = useNavigate();
-  if (!socket.id) {
-    console.log("No socket ID found, navigating back to home page");
-    navigate("/");
-  }
   const socket = useSocket();
+
+
 
   const [joinedUsers, setJoinedUsers] = useState([]);
   const [isMuted, setIsMuted] = useState(false);
@@ -59,6 +57,9 @@ export default function Chat() {
 
   // Socket listeners
   useEffect(() => {
+    if(!socket||!socket.id){
+      navigate('/')
+    }
   
 
   socket.on("joined-users", handleJoinedUsers);
@@ -116,7 +117,7 @@ export default function Chat() {
   };
 
   return (
-    socket.id && (
+    socket.id ? (
       <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Video Call Section */}
@@ -167,7 +168,7 @@ export default function Chat() {
       {/* Incoming Call UI */}
       {incomingCall && <IncomingCall answerCall={answerCall} endCall={endCall} />}
     </div>
-    )
+    ):<div>No socket found</div>
   
   );
 }
