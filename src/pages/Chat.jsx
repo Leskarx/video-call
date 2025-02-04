@@ -7,8 +7,13 @@ import PeerServices from "../services/peer";
 import IncomingCall from "../components/IncommingCall";
 
 export default function Chat() {
-  const socket = useSocket();
   const navigate = useNavigate();
+  if (!socket.id) {
+    console.log("No socket ID found, navigating back to home page");
+    navigate("/");
+  }
+  const socket = useSocket();
+
   const [joinedUsers, setJoinedUsers] = useState([]);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOn, setIsVideoOn] = useState(true);
@@ -54,10 +59,7 @@ export default function Chat() {
 
   // Socket listeners
   useEffect(() => {
-  if (!socket.id) {
-    console.log("No socket ID found, navigating back to home page");
-    navigate("/");
-  }
+  
 
   socket.on("joined-users", handleJoinedUsers);
   socket.on("incoming-call", handleIncomingCall);
