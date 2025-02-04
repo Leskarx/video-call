@@ -114,7 +114,8 @@ export default function Chat() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
+    socket.id && (
+      <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Video Call Section */}
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-4">
@@ -164,5 +165,7 @@ export default function Chat() {
       {/* Incoming Call UI */}
       {incomingCall && <IncomingCall answerCall={answerCall} endCall={endCall} />}
     </div>
+    )
+  
   );
 }
