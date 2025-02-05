@@ -5,6 +5,7 @@ import { FcVideoCall } from "react-icons/fc";
 import { MdCallEnd } from "react-icons/md";
 import PeerServices from "../services/peer";
 import IncomingCall from "../components/IncommingCall";
+import Ringing from "../components/Ringing";
 
 export default function Chat() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function Chat() {
   const [remotePeerId, setRemotePeerId] = useState(null); // Track remote peer ID
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  const [isRinging,setRinging]=useState(false)
 
   const handleJoinedUsers = useCallback((usersList) => {
     console.log("Updated users list:", usersList);
@@ -40,6 +42,8 @@ export default function Chat() {
   // Handle ICE candidates
   useEffect(() => {
     PeerServices.peer.addEventListener("track", (e) => {
+      console.log("call recieved from other end")
+      setRinging(false)
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = e.streams[0];
       }
@@ -88,12 +92,16 @@ export default function Chat() {
     if (localVideoRef.current?.srcObject) {
       localVideoRef.current.srcObject.getTracks().forEach((track) => track.stop());
     }
+    if (remoteVideoRef.current?.srcObject) {
+      remoteVideoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+    }
     setIncomingCall(null);
     setRemotePeerId(null);
-    console.log("Call ended");
+    console.log("Call ended",localVideoRef.current?.srcObject);
   };
 
   const startCall = useCallback(async (id) => {
+    setRinging(true)
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     localVideoRef.current.srcObject = stream;
     stream.getTracks().forEach((track) => PeerServices.peer.addTrack(track, stream));
@@ -164,6 +172,11 @@ export default function Chat() {
           </div>
         </div>
       </div>
+    {/* ringing animation */}
+    {
+      isRinging && <Ringing isConnecting={isRinging} stopConnecting={endCall} />
+    }
+    
 
       {/* Incoming Call UI */}
       {incomingCall && <IncomingCall answerCall={answerCall} endCall={endCall} />}
